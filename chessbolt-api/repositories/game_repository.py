@@ -1,5 +1,7 @@
-from models.entities.game import Game
 from typing import List
+
+from models.entities.game import Game
+
 from repositories.db import session
 
 

@@ -1,14 +1,24 @@
-from models.entities.game import Game
-from models.dtos.register_game_request import RegisterGameRequest
-from elo import rate_1vs1
 from datetime import datetime
-from repositories import player_repository, game_repository
+
+from elo import rate_1vs1
+from fastapi.exceptions import HTTPException
+from models.dtos.register_game_request import RegisterGameRequest
+from models.entities.game import Game
+from repositories import game_repository, player_repository
+
+
+def find_by_id(id: int) -> Game:
+    game = game_repository.find_by_id(id)
+    if not game:
+        raise HTTPException(status_code=404)
+
+    return game
 
 
 def register_game(game: RegisterGameRequest):
     black, white = (
-        player_repository.find_by_id(game.black_player_id),
-        player_repository.find_by_id(game.white_player_id)
+        player_repository.find_by_name(game.black_player_name),
+        player_repository.find_by_name(game.white_player_name)
     )
 
     winner, loser = (

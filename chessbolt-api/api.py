@@ -1,17 +1,19 @@
 
-from models.dtos.player import PlayerDto
-from models.dtos.game import GameDto
-from typing import List
-from repositories import player_repository, game_repository
-from models.dtos.register_game_request import RegisterGameRequest
-from fastapi import FastAPI
-from fastapi.middleware.cors import CORSMiddleware
-import uvicorn
 import json
-from utilities import get_uptime
-import os
+from typing import List
 
-from services import game_service
+import uvicorn
+from fastapi import FastAPI, HTTPException
+from fastapi.middleware.cors import CORSMiddleware
+
+from models.dtos.game import GameDto
+from models.dtos.player import PlayerDto
+from models.dtos.register_game_request import RegisterGameRequest
+from models.dtos.register_player_request import RegisterPlayerRequest
+from models.dtos.update_player_request import UpdatePlayerRequest
+from repositories import game_repository, player_repository
+from services import game_service, player_service
+from utilities import get_uptime
 
 # --- Welcome to your Emily API! --- #
 
@@ -25,6 +27,10 @@ from services import game_service
 config_file = 'config.json'
 config = json.load(open(config_file))
 app = FastAPI()
+
+
+def to_dto(entity, dto):
+    return dto(**entity.as_dict())
 
 
 @app.get('/api/health')
@@ -47,7 +53,15 @@ def get_players():
     '''
     Returns the list of all registered players
     '''
-    return [PlayerDto(**p) for p in player_repository.find_all()]
+    return [to_dto(p, PlayerDto) for p in player_repository.find_all()]
+
+
+@app.put('/players', response_model=PlayerDto)
+def register_player(request: RegisterPlayerRequest):
+    '''
+    Registers a new player
+    '''
+    return to_dto(player_service.register_player(request), PlayerDto)
 
 
 @app.get('/players/{id}', response_model=PlayerDto)
@@ -55,7 +69,15 @@ def get_player_by_id(id: int):
     '''
     Retrives a player's information by player ID
     '''
-    return PlayerDto(**player_repository.find_by_id(id))
+    return to_dto(player_service.find_by_id(id), PlayerDto)
+
+
+@app.patch('/players/{id}', response_model=PlayerDto)
+def update_player(id: int, request: UpdatePlayerRequest):
+    '''
+    Updates a player's information
+    '''
+    return to_dto(player_service.update_player(id, request), PlayerDto)
 
 
 @app.get('/players/{id}/games', response_model=List[GameDto])
@@ -63,7 +85,7 @@ def get_games_by_player_id(id: int):
     '''
     Returns the list of games played by a specific player
     '''
-    return [GameDto(**g.as_dict()) for g in game_repository.find_by_player_id(id)]
+    return [to_dto(g, GameDto) for g in game_repository.find_by_player_id(id)]
 
 
 @app.get('/games', response_model=List[GameDto])
@@ -71,7 +93,7 @@ def get_games():
     '''
     Returns the list of all games played
     '''
-    return [GameDto(**g.as_dict()) for g in game_repository.find_all()]
+    return [to_dto(g, GameDto) for g in game_repository.find_all()]
 
 
 @app.put('/games', response_model=GameDto)
@@ -80,11 +102,13 @@ def register_game(game: RegisterGameRequest):
     Registers a new played game.
     Updates both players' ELO according to the result of the game.
     '''
-    if game.result not in ['WHITE', 'BLACK', 'DRAW']:
-        raise Exception(f'Invalid game result: {game.result}')
+    valid_results = ['WHITE', 'BLACK', 'DRAW']
+    if game.result not in valid_results:
+        raise HTTPException(
+            status_code=422, detail=f'Game result must be one of {valid_results}')
 
     game = game_service.register_game(game)
-    return GameDto(**game.as_dict())
+    return to_dto(game, GameDto)
 
 
 app.add_middleware(
@@ -96,14 +120,6 @@ app.add_middleware(
 )
 
 if __name__ == '__main__':
-    db_config = {
-        'PASS': os.environ['DB_PASS'],
-        'USER': os.environ['DB_USER'],
-        'HOST': os.environ['DB_HOST'],
-        'PORT': os.environ['DB_PORT'],
-        'DB': os.environ['DB_NAME']
-    }
-
     uvicorn.run(
         'api:app',
         host=config['connection']['host'],
