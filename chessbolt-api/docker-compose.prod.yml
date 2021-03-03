@@ -1,0 +1,28 @@
+
+version: "3"
+services:
+  emily-chessbolt-api-0agsq4-prod:
+    image: emily-chessbolt-api-0agsq4-prod
+    container_name: emily-chessbolt-api-0agsq4-prod
+    command: python3 ${MAIN}
+    restart: always
+    ports:
+      - ${CONTAINER_PORT}:${HOST_PORT}
+    networks:
+      - emily-chessbolt-api-0agsq4-prod-network
+    build:
+      context: .
+      dockerfile: ./.devcontainer/Dockerfile
+    volumes:
+      - .:/workspace:cached
+      
+    runtime: ${RUNTIME}
+    environment:
+      - NVIDIA_VISIBLE_DEVICES=${NVIDIA_VISIBLE_DEVICES}
+      - NVIDIA_DRIVER_CAPABILITIES=${NVIDIA_DRIVER_CAPABILITIES}
+    ipc: ${IPC}
+networks:
+  emily-chessbolt-api-0agsq4-prod-network:
+    name: emily-chessbolt-api-0agsq4-prod-network
+    driver: bridge
+  
