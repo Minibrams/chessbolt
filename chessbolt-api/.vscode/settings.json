@@ -1,10 +1,10 @@
-
 {
   "workbench.startupEditor": "readme",
   "python.envFile": "${workspaceFolder}/.env",
   "python.pythonPath": "/usr/local/bin/python",
-  "terminal.integrated.env.linux": {"PYTHONPATH": "${workspaceFolder}"},
-  
+  "terminal.integrated.env.linux": {
+    "PYTHONPATH": "${workspaceFolder}"
+  },
   "python.linting.pylintEnabled": false,
   "python.linting.flake8Enabled": true,
   "python.linting.flake8Args": [
