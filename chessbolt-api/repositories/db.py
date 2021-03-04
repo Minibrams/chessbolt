@@ -15,7 +15,9 @@ db = {
 }
 
 engine = create_engine(
-    f'mysql://{db["USER"]}:{db["PASS"]}@{db["HOST"]}/{db["NAME"]}?charset=utf8mb4')
+    f'mysql://{db["USER"]}:{db["PASS"]}@{db["HOST"]}/{db["NAME"]}?charset=utf8mb4',
+    pool_recycle=300,
+    pool_pre_ping=True)
 
 Session = sessionmaker()
 Session.configure(bind=engine, expire_on_commit=False)
