@@ -1,6 +1,6 @@
 import React, { ReactNode, createContext, useState, useContext } from 'react'
 import { AppThemes } from '../../shared/styles/themes'
-import { storeState } from '../state-wrapper'
+import { storeState } from '../state.provider'
 
 const LOCAL_STORAGE_KEY = 'SITE_STATE'
 
@@ -30,7 +30,7 @@ const SiteContext = createContext<SiteStateContextProps>({
   changeTheme: (theme) => {},
 })
 
-const SiteStateProvider = (props: SiteStateProviderProps) => {
+export const SiteStateProvider = (props: SiteStateProviderProps) => {
   const [state, setState] = useState<SiteState>(storedState)
   const store = (state: SiteState) => storeState(state, LOCAL_STORAGE_KEY)
   const update = (updated: SiteState) => {
@@ -51,5 +51,4 @@ const SiteStateProvider = (props: SiteStateProviderProps) => {
   )
 }
 
-export default SiteStateProvider
 export const useSite = () => useContext(SiteContext)

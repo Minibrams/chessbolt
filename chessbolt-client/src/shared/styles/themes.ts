@@ -38,8 +38,26 @@ export type AppTheme = {
     default: string
     onDefault: string
 
+    // Chess colors
+    white: string
+    black: string
+    onWhite: string
+    onBlack: string
+
     // Text
     mute: (val: string) => string
+    fluid: (property: string, minValue: number, maxValue: number) => string
+}
+
+const displayWide = 1920
+const displayNarrow = 375
+
+// Fluidly lerp the font-size according to the screen size
+const fluid = (property: string, minValue: number, maxValue: number) => {
+  const x = (maxValue - minValue) / (displayWide - displayNarrow)
+  const y = maxValue - displayWide * x
+
+  return `${property}: calc(${100 * x}vw + ${y}px);`
 }
 
 export const LightTheme: AppTheme = {
@@ -47,7 +65,7 @@ export const LightTheme: AppTheme = {
 
     primary: 'white',
     primaryInverse: '#262322',
-    primaryVariant: '#FAF3DD',
+    primaryVariant: '#f3f3f3',
     onPrimary: 'black',
 
     secondary: '#B2E6D4',
@@ -76,7 +94,14 @@ export const LightTheme: AppTheme = {
     default: 'black',
     onDefault: 'white',
 
+    // Chess colors
+    white: '#f3f3f3',
+    black: '#262322',
+    onWhite: '#262322',
+    onBlack: '#f3f3f3',
+
     mute: (val: string) => transparentize(0.5, val),
+    fluid: fluid
 }
 
 export const DarkTheme: AppTheme = {
@@ -113,7 +138,14 @@ export const DarkTheme: AppTheme = {
     default: 'black',
     onDefault: 'white',
 
+    // Chess colors
+    white: '#f3f3f3',
+    black: '#262322',
+    onWhite: '#262322',
+    onBlack: '#f3f3f3',
+
     mute: (val: string) => transparentize(0.5, val),
+    fluid: fluid
 }
 
 export const styled = baseStyled as ThemedStyledInterface<AppTheme>
